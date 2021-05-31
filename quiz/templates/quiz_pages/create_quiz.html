@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% load static %} {% load quiz_extras %} 
 {% block content %}
 <h3>create quiz</h3>
-<form action="/quiz/create-quiz/" method="POST">
+<form id="submit-create" action="/quiz/create-quiz/" method="POST">
   {% csrf_token %}
   <label>quiz name</label>
   <input type="text" placeholder="enter name" name="quizname" required />
@@ -14,19 +14,43 @@
     max="100"
     required
   />
-  <input type="submit" value="create" />
+  <input type="submit" id="submit-create-button" value="create" />
 </form>
 
 <ul>
   {% for quiz in quizes %}
   <li>
-    {{quiz.name}}, students completed: {{quiz.completed}}, pass percentage: {{quiz.pass_percentage}}
-    <form action="/quiz/delete-quiz/" method="POST">
+    {{quiz.name}}, students completed: {{quiz.completed}}, pass percentage:
+    {{quiz.pass_percentage}}
+    <form  id="submit-delete" action="/quiz/delete-quiz/" method="POST">
       {% csrf_token %}
-      <input type="number"name="quiz_pk" required hidden value="{{quiz.pk}}"/>
-      <input type="submit" value="delete"/>
+      <input type="number" name="quiz_pk" required hidden value="{{quiz.pk}}" />
+      <input type="submit" id="submit-delete-button" value="delete" />
     </form>
   </li>
   {% endfor %}
 </ul>
+
+<script>
+  (function () {
+    // selectors
+    var createForm = document.getElementById("submit-create");
+    var deleteForm = document.getElementById("submit-delete");
+    var createButton = document.getElementById("submit-create-button");
+    var deleteButton = document.getElementById("submit-delete-button");
+
+    // functions
+    var disableElement = (element) => {
+      element.setAttribute("disabled", "");
+    };
+
+    // eventlisteners to disable
+    createForm.addEventListener("submit", (e) => {
+      disableElement(createButton);
+    });
+    deleteForm.addEventListener("submit", (e) => {
+      disableElement(deleteButton);
+    });
+  })();
+</script>
 {% endblock %}

@@ -333,7 +333,6 @@
           console.log(answerStatus, msg);
           updateAnswerStatusDom(msg["actual-answers"]);
           showElement(answerStatusElement);
-          disableElement(submitAnswerButton);
           submitAnswerButton.innerHTML = "Submit Answer";
           disableFormInputs();
           activateElement(nextQuestionButton);
@@ -368,6 +367,7 @@
     if (quizContainer) {
       submitAnswerButton.addEventListener("click", () => {
         submitAnswer();
+        disableElement(submitAnswerButton)
         $("#submit-answer").html(
           '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> <span class="sr-only">Loading...</span>'
         );
