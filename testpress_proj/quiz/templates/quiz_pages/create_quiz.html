@@ -1,0 +1,15 @@
+<h3>create quiz</h3>
+<form action="/quiz/create-quiz/" method="POST">
+  {% csrf_token %}
+  <label>quiz name</label>
+  <input type="text" placeholder="enter name" name="quizname" required />
+  <label>pass percentage</label>
+  <input type="number" placeholder="enter percent" name="percent" min="0" max="100" required/>
+  <input type="submit" value="create" />
+</form>
+
+<ul>
+  {% for quiz in quizes %}
+  <li>{{quiz.name}}, completed: {{quiz.completed}}</li>
+  {% endfor %}
+</ul>

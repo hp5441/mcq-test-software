@@ -1,0 +1,403 @@
+{% extends "base.html" %} {% load static %} {% load quiz_extras %} 
+{% block content %} 
+{% if status.status == "N" %}
+<div
+  class="container-sm bg-info"
+  style="height: 200px"
+  id="quiz-notice-container"
+>
+  <p>would you like to start the quiz?</p>
+  <p>pass percentage is {{status.quiz.pass_percentage}}%</p>
+  <input type="button" id="start-quiz" value="Start" />
+</div>
+{% elif status.status == "I" %}
+<div
+  class="container-sm bg-info"
+  style="height: 200px"
+  id="quiz-notice-container"
+>
+  <p>would you like to continue the quiz?</p>
+  <p>pass percentage is {{status.quiz.pass_percentage}}%</p>
+  <input type="button" id="start-quiz" value="Continue" />
+</div>
+{% endif %}
+
+<div
+  class="container-sm bg-info visually-hidden"
+  style="height: 700px"
+  id="quiz-container"
+>
+  <div id="timer"></div>
+  <div style="margin: 10px; height: 100px" id="question"></div>
+  <div class="list-group" id="answers-list"></div>
+  <div class="row justify-content-end">
+    <div class="column-1" style="width: 200px">
+      <button
+        type="button"
+        class="btn btn-lg btn-primary"
+        id="submit-answer"
+        disabled
+      >
+        Submit Answer
+      </button>
+    </div>
+  </div>
+  <div class="row justify-content-end">
+    <div class="column-1" style="width: 200px">
+      <button
+        type="button"
+        class="btn btn-lg btn-primary"
+        id="next-question"
+        disabled
+      >
+        Next
+      </button>
+    </div>
+  </div>
+  <div class="visually-hidden" id="answer-status"></div>
+</div>
+<div
+  class="container-sm bg-info visually-hidden"
+  style="height: 700px"
+  id="completed-container"
+>
+  <div class="list-group" id="completed-list-container"></div>
+</div>
+
+<script type="text/javascript">
+  (function () {
+    // selectors
+    var startButton = document.getElementById("start-quiz");
+    var noticeContainer = document.getElementById("quiz-notice-container");
+    var quizContainer = document.getElementById("quiz-container");
+    var completedContainer = document.getElementById("completed-container");
+    var questionContainer = document.getElementById("question");
+    var answerContainer = document.getElementById("answers-list");
+    var submitAnswerButton = document.getElementById("submit-answer");
+    var answerStatusElement = document.getElementById("answer-status");
+    var nextQuestionButton = document.getElementById("next-question");
+    var answerStatus = null;
+    var answerInputs = null;
+
+    console.log("{{status.user.pk}}");
+    console.log("{{status.quiz.pk}}");
+    console.log("{{status.status}}");
+    console.log("{{status.time_taken}}");
+    console.log("{{status.current_index}}");
+
+    // local variables
+    var count = parseInt(sessionStorage.getItem("{{status.pk}}"))
+      ? parseInt(sessionStorage.getItem("{{status.pk}}"))
+      : parseInt("{{status.time_taken}}");
+    var intervalVar = null;
+    var status = "{{status.status}}";
+    var currentQuestion = parseInt("{{status.current_index}}");
+    var passPercentage = parseInt("{{status.quiz.pass_percentage}}");
+    var questions = null;
+    var answers = null;
+    var checkedAnswers = new Set();
+
+    // functions
+    var parseDate = (seconds) =>
+      new Date(seconds * 1000).toISOString().substr(11, 8);
+
+    var updateTime = (time) => {
+      $("#timer").text(time);
+    };
+
+    var timer = () => {
+      count += 1;
+      updateTime(parseDate(count));
+    };
+
+    var randomizeArray = (array) => {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    };
+
+    var transformAnswersArray = (ansArr) => {
+      randomizeArray(ansArr);
+      let transformed = {};
+      ansArr.forEach((ans) => {
+        if (ans.question in transformed) {
+          transformed[ans.question].push({ ...ans });
+        } else {
+          transformed[ans.question] = [];
+          transformed[ans.question].push({ ...ans });
+        }
+      });
+      return transformed;
+    };
+
+    var createAnswerNode = () => {
+      console.log(answers);
+      const AnswerIndex = questions[currentQuestion].pk;
+      $("#question").html(questions[currentQuestion].statement);
+      let answersList = "";
+      for (let i = 0; i < 4; i++) {
+        answersList +=
+          "<label class='list-group-item'>" +
+          `<input class='form-check-input me-1' type='checkbox' value=${answers[AnswerIndex][i].pk}>` +
+          answers[AnswerIndex][i].answer +
+          "</label> ";
+      }
+      $("#answers-list").html(answersList);
+    };
+
+    var addQuestionAnswers = () => {
+      switch (status) {
+        case "N":
+        case "I":
+          (function () {
+            createAnswerNode();
+            answerInputs = [...document.querySelectorAll(".form-check-input")];
+            if (answerInputs) addAnswerEventListener();
+          })();
+          break;
+        case "C":
+          console.log("comp");
+          break;
+      }
+    };
+
+    var disableFormInputs = () => {
+      $(".form-check-input").attr("disabled", "");
+    };
+
+    var compareAnswers = (correctAnswers) => {
+      if (checkedAnswers.size !== correctAnswers.length) {
+        return false;
+      }
+      for (let i = 0; i < correctAnswers.length; i++) {
+        if (!checkedAnswers.has(correctAnswers[i]["pk"].toString())) {
+          console.log(correctAnswers[i].pk, checkedAnswers);
+          return false;
+        }
+      }
+      return true;
+    };
+
+    var hideElement = (element) => {
+      element.classList.add("visually-hidden");
+    };
+
+    var showElement = (element) => {
+      element.classList.remove("visually-hidden");
+    };
+
+    var disableElement = (element) => {
+      element.setAttribute("disabled", "");
+    };
+
+    var activateElement = (element) => {
+      element.removeAttribute("disabled");
+    };
+
+    var getQuestions = () => {
+      $.ajaxSetup({
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+      });
+      $.ajax({
+        method: "POST",
+        url: "/quiz/get-questions/",
+        data: { quiz: "{{status.quiz.pk}}" },
+      })
+        .done(function (msg) {
+          console.log(msg);
+          questions = msg["questions"];
+          answers = transformAnswersArray(msg["answers"]);
+          addQuestionAnswers();
+          intervalVar = setInterval(timer, 1000);
+        })
+        .then(() => {
+          showElement(quizContainer);
+        })
+        .fail((err) => {
+          console.log(err);
+        });
+    };
+
+    var updateAnswerStatusDom = (correctAnswers) => {
+      if (answerStatus) {
+        $("#answer-status").html("<div class='list-group-item'>Correct</div>");
+      } else {
+        $("#answer-status").html(
+          `<div class='list-group-item'>Incorrect</div> <div class='list-group-item'>Correct answer:${correctAnswers
+            .map((ans) => ans.answer)
+            .join(", ")}</div>`
+        );
+      }
+    };
+
+    var calculateMarks = (dataArray) => {
+      return dataArray.reduce((a, element) => {
+        if (element.correctness) {
+          return a + 1;
+        } else {
+          return a;
+        }
+      }, 0);
+    };
+
+    var createCompletedNode = (data) => {
+      let completedList = "";
+      completedList += "<div class='list-group-item'>Completed</div> ";
+      completedList += `<div class='list-group-item'>Marks: ${calculateMarks(
+        data["attempt-data"]
+      )}/${data["attempt-data"].length}</div> `;
+      completedList += `<div class='list-group-item'>Time taken: ${parseDate(
+        data["time-taken"]
+      )}</div> `;
+      completedList += `<div class='list-group-item'>Status: ${
+        (calculateMarks(data["attempt-data"]) / data["attempt-data"].length) *
+          100 >=
+        passPercentage
+          ? "Pass"
+          : "Fail"
+      }</div>`;
+      $("#completed-list-container").html(completedList);
+    };
+
+    var getResult = () => {
+      $.ajaxSetup({
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+      });
+      $.ajax({
+        method: "POST",
+        url: "/quiz/get-result/",
+        data: {
+          quiz: "{{status.quiz.pk}}",
+        },
+      })
+        .done(function (msg) {
+          console.log(msg);
+          return msg;
+        })
+        .then((msg) => {
+          createCompletedNode(msg);
+        })
+        .fail((err) => {
+          console.log(err);
+        });
+    };
+
+    var updateCompletedDom = () => {
+      hideElement(quizContainer);
+      getResult();
+      showElement(completedContainer);
+    };
+
+    var submitAnswer = () => {
+      $.ajaxSetup({
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+      });
+      $.ajax({
+        method: "POST",
+        url: "/quiz/submit-answer/",
+        data: {
+          quiz: "{{status.quiz.pk}}",
+          question: questions[currentQuestion].pk,
+          index: currentQuestion + 1,
+          answers: Array.from(checkedAnswers),
+          time: count,
+        },
+      })
+        .done(function (msg) {
+          console.log(msg);
+          status = msg["quiz-status"];
+          answerStatus = compareAnswers(msg["actual-answers"]);
+          console.log(answerStatus, msg, compareAnswers(msg["actual-answers"]));
+          return msg;
+        })
+        .then((msg) => {
+          console.log(answerStatus, msg);
+          updateAnswerStatusDom(msg["actual-answers"]);
+          showElement(answerStatusElement);
+          disableElement(submitAnswerButton);
+          submitAnswerButton.innerHTML = "Submit Answer";
+          disableFormInputs();
+          activateElement(nextQuestionButton);
+        })
+        .fail((err) => {
+          console.log(err);
+        });
+    };
+
+    var updateNextQuestionDom = () => {
+      currentQuestion += 1;
+      if (currentQuestion === questions.length) {
+        updateCompletedDom();
+        return;
+      }
+      console.log(currentQuestion);
+      addQuestionAnswers();
+      disableElement(nextQuestionButton);
+      $("#answer-status").html("");
+      checkedAnswers.clear();
+    };
+
+    if (noticeContainer) {
+      startButton.addEventListener("click", () => {
+        hideElement(noticeContainer);
+        getQuestions();
+      });
+    }
+
+    if (quizContainer) {
+      submitAnswerButton.addEventListener("click", () => {
+        submitAnswer();
+        $("#submit-answer").html(
+          '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> <span class="sr-only">Loading...</span>'
+        );
+      });
+
+      nextQuestionButton.addEventListener("click", () => {
+        updateNextQuestionDom();
+      });
+    }
+
+    var addAnswerEventListener = () => {
+      answerInputs.forEach((element) => {
+        element.addEventListener("input", (e) => {
+          if (e.target.checked) {
+            checkedAnswers.add(e.target.value);
+          } else {
+            checkedAnswers.delete(e.target.value);
+          }
+          console.log(checkedAnswers);
+          if (answerInputs.some((node) => node.checked === true)) {
+            activateElement(submitAnswerButton);
+          } else {
+            disableElement(submitAnswerButton);
+          }
+        });
+      });
+    };
+
+    var checkBeforeUnload = (e) => {
+      // Cancel the event
+      e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
+      // Chrome requires returnValue to be set
+
+      sessionStorage.setItem("{{status.pk}}", count.toString());
+      console.log("inside refresh");
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", checkBeforeUnload);
+
+    if (status === "C") {
+      updateCompletedDom();
+      window.removeEventListener("beforeunload", checkBeforeUnload);
+    }
+  })();
+</script>
+{% endblock %}
