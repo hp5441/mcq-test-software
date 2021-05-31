@@ -52,10 +52,14 @@ def teacher_sign_up(request):
 def teacher_sign_in(request):
     if request.method == 'POST':
         form = SignInForm(data=request.POST)
+        user = None
         print(request.POST)
         if form.is_valid():
-            user = authenticate(request, username=request.POST.get(
-                'username'), password=request.POST.get('password'))
+            try:
+                user = authenticate(request, username=request.POST.get(
+                    'username'), password=request.POST.get('password'))
+            except:
+                raise Exception("unablr to authenticate")
             if user is not None:
                 try:
                     login(request, user)
@@ -69,6 +73,7 @@ def teacher_sign_in(request):
     else:
         return redirect("/")
 
+
 def student_sign_up(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -77,13 +82,18 @@ def student_sign_up(request):
             form.save()
     return redirect("/")
 
+
 def student_sign_in(request):
     if request.method == 'POST':
         form = SignInForm(data=request.POST)
+        user = None
         print(request.POST)
         if form.is_valid():
-            user = authenticate(request, username=request.POST.get(
-                'username'), password=request.POST.get('password'))
+            try:
+                user = authenticate(request, username=request.POST.get(
+                    'username'), password=request.POST.get('password'))
+            except:
+                raise Exception("unablr to authenticate")
             if user is not None:
                 try:
                     login(request, user)
