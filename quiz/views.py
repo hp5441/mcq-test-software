@@ -124,3 +124,15 @@ def create_quiz(request):
     context = {'quizes': active_quizs}
 
     return render(request, 'quiz_pages/create_quiz.html', context)
+
+
+def delete_quiz(request):
+    if(request.method == "POST"):
+        quiz = request.POST.get("quiz_pk")
+        try:
+            Quiz.objects.get(pk=int(quiz)).delete()
+        except:
+            raise Exception("unable to delete quiz")
+        else:
+            return redirect("/")
+    return redirect("/")

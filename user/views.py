@@ -16,7 +16,7 @@ def logout_view(request):
 def redirect_view(request):
     if(request.user.is_authenticated):
         if(request.user.is_teacher):
-            return redirect("/quiz/quiz-create/")
+            return redirect("/quiz/create-quiz/")
         else:
             return redirect(f"/quiz/{request.user.pk}/")
     else:
@@ -63,6 +63,8 @@ def teacher_sign_in(request):
                     raise Exception("unable to login")
             else:
                 raise Exception("user not found")
+        else:
+            return Exception("user not found")
 
 
 def student_sign_up(request):

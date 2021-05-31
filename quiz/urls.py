@@ -8,4 +8,5 @@ urlpatterns = [
     path('submit-answer/', views.submit_quiz_response),
     path('create-quiz/', views.create_quiz),
     path('get-result/', views.get_result),
+    path('delete-quiz/', views.delete_quiz),
 ]

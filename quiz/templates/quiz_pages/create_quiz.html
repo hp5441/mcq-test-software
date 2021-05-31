@@ -19,7 +19,14 @@
 
 <ul>
   {% for quiz in quizes %}
-  <li>{{quiz.name}}, completed: {{quiz.completed}}</li>
+  <li>
+    {{quiz.name}}, completed: {{quiz.completed}}
+    <form action="/quiz/delete-quiz/" method="POST">
+      {% csrf_token %}
+      <input type="number"name="quiz_pk" required hidden value="{{quiz.pk}}"/>
+      <input type="submit" value="delete"/>
+    </form>
+  </li>
   {% endfor %}
 </ul>
 {% endblock %}
