@@ -20,7 +20,7 @@
 <ul>
   {% for quiz in quizes %}
   <li>
-    {{quiz.name}}, completed: {{quiz.completed}}
+    {{quiz.name}}, students completed: {{quiz.completed}}, pass percentage: {{quiz.pass_percentage}}
     <form action="/quiz/delete-quiz/" method="POST">
       {% csrf_token %}
       <input type="number"name="quiz_pk" required hidden value="{{quiz.pk}}"/>

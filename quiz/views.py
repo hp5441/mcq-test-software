@@ -112,10 +112,11 @@ def get_result(request):
 
 
 def create_quiz(request):
-    """AJAX request accessible to teachers to create quizzes for their particular school"""
+    """AJAX request accessible to teachers to create quizzes for their particular school (uses opentdb)"""
 
     if request.method == "POST" and request.user.is_teacher:
         quiz = None
+        """uses utility function to get random questions from opentdb"""
         data = get_json()
 
         try:
