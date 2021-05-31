@@ -97,6 +97,8 @@
     var checkedAnswers = new Set();
 
     // functions
+
+    // function for parsing integer to time in HH:MM:SS
     var parseDate = (seconds) =>
       new Date(seconds * 1000).toISOString().substr(11, 8);
 
@@ -116,6 +118,7 @@
       }
     };
 
+    // transforming and randomizing the answers array to prevent copying
     var transformAnswersArray = (ansArr) => {
       randomizeArray(ansArr);
       let transformed = {};
@@ -130,6 +133,7 @@
       return transformed;
     };
 
+    // function for populating the answers and question in the DOM
     var createAnswerNode = () => {
       console.log(answers);
       const AnswerIndex = questions[currentQuestion].pk;
@@ -145,6 +149,7 @@
       $("#answers-list").html(answersList);
     };
 
+    // updates the DOM depending the quiz attempt status of notcomplete N, complete C and incomplete I
     var addQuestionAnswers = () => {
       switch (status) {
         case "N":
@@ -165,6 +170,7 @@
       $(".form-check-input").attr("disabled", "");
     };
 
+    // funtion for comparing correct answers with user's response
     var compareAnswers = (correctAnswers) => {
       if (checkedAnswers.size !== correctAnswers.length) {
         return false;
@@ -178,6 +184,7 @@
       return true;
     };
 
+    //utility
     var hideElement = (element) => {
       element.classList.add("visually-hidden");
     };
@@ -194,6 +201,7 @@
       element.removeAttribute("disabled");
     };
 
+    //AJAX request to get questions and answers from the server
     var getQuestions = () => {
       $.ajaxSetup({
         beforeSend: function (xhr) {
@@ -220,6 +228,7 @@
         });
     };
 
+    // updates DOM after getting the correct answers from the server
     var updateAnswerStatusDom = (correctAnswers) => {
       if (answerStatus) {
         $("#answer-status").html("<div class='list-group-item'>Correct</div>");
@@ -232,6 +241,7 @@
       }
     };
 
+    // funtion for calculating marks for the end result
     var calculateMarks = (dataArray) => {
       return dataArray.reduce((a, element) => {
         if (element.correctness) {
@@ -242,6 +252,7 @@
       }, 0);
     };
 
+    // populates the final completed state of the quiz
     var createCompletedNode = (data) => {
       let completedList = "";
       completedList += "<div class='list-group-item'>Completed</div> ";
@@ -261,6 +272,7 @@
       $("#completed-list-container").html(completedList);
     };
 
+    // AJAX request to get the final result
     var getResult = () => {
       $.ajaxSetup({
         beforeSend: function (xhr) {
@@ -292,6 +304,7 @@
       showElement(completedContainer);
     };
 
+    // AJAX request for submitting the user's response and functions for subsequent manipulation of the DOM
     var submitAnswer = () => {
       $.ajaxSetup({
         beforeSend: function (xhr) {
@@ -330,6 +343,7 @@
         });
     };
 
+    // function for updating DOM with the next question
     var updateNextQuestionDom = () => {
       currentQuestion += 1;
       if (currentQuestion === questions.length) {
@@ -343,6 +357,7 @@
       checkedAnswers.clear();
     };
 
+    // adding event listeners for buttons 
     if (noticeContainer) {
       startButton.addEventListener("click", () => {
         hideElement(noticeContainer);

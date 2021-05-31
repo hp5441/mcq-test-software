@@ -5,6 +5,8 @@ from .utils import get_json
 
 
 def quiz_page(request, user):
+    """quiz page shows a list of quizzes accessible to that particular student's school"""
+
     if(user == request.user.pk and not request.user.is_teacher):
         quizs = Quiz.objects.filter(school=request.user.school)
         context = {'quizs': quizs}
@@ -13,6 +15,8 @@ def quiz_page(request, user):
 
 
 def quiz_specific_page(request, user, quiz):
+    """quiz specific page view shows the quiz with mcq options"""
+
     if(user == request.user.pk and not request.user.is_teacher):
         if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
             quiz_status, created = QuizAttemptStatus.objects.get_or_create(user=request.user,
@@ -23,6 +27,8 @@ def quiz_specific_page(request, user, quiz):
 
 
 def get_quiz_questions(request):
+    """AJAX request which serves a JSON containing a list of questions and its possible answers"""
+
     if request.method == "POST" and not request.user.is_teacher:
 
         quiz = request.POST.get("quiz")
@@ -39,6 +45,8 @@ def get_quiz_questions(request):
 
 
 def submit_quiz_response(request):
+    """AJAX request which records the user's response and returns a JSON of the correct answer"""
+
     if request.method == "POST" and not request.user.is_teacher:
         print(request.POST)
         quiz = request.POST.get("quiz")
@@ -86,6 +94,8 @@ def submit_quiz_response(request):
 
 
 def get_result(request):
+    """AJAX request which serves details of the user's quiz attempt details in JSON"""
+
     if request.method == "POST" and not request.user.is_teacher:
         quiz = request.POST.get("quiz")
         if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
@@ -102,6 +112,8 @@ def get_result(request):
 
 
 def create_quiz(request):
+    """AJAX request accessible to teachers to create quizzes for their particular school"""
+
     if request.method == "POST" and request.user.is_teacher:
         quiz = None
         data = get_json()
@@ -134,6 +146,8 @@ def create_quiz(request):
 
 
 def delete_quiz(request):
+    """AJAX request accessible to teachers to delete quizzes"""
+
     if(request.method == "POST" and request.user.is_teacher):
         quiz = request.POST.get("quiz_pk")
         try:

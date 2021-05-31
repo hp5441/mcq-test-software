@@ -44,6 +44,7 @@ class School(models.Model):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """user model for both students and teachers with customised fields from django's base user model"""
 
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255, null=True)

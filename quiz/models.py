@@ -4,6 +4,7 @@ from django.conf import settings
 
 
 class Quiz(models.Model):
+    """quiz model"""
 
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
@@ -17,6 +18,7 @@ class Quiz(models.Model):
 
 
 class QuizQuestion(models.Model):
+    """question model contains the question statement"""
 
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     statement = models.TextField()
@@ -26,6 +28,7 @@ class QuizQuestion(models.Model):
 
 
 class QuizAnswer(models.Model):
+    """answer model"""
 
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
@@ -37,6 +40,7 @@ class QuizAnswer(models.Model):
 
 
 class QuizAttemptStatus(models.Model):
+    """attempt model keeps track of a specific user's attempt at a specific quiz"""
 
     choices = [('C', 'completed'), ('I', 'incomplete'), ('N', 'notStarted')]
 
@@ -61,6 +65,7 @@ class QuizAttemptStatus(models.Model):
 
 
 class AnswerStatus(models.Model):
+    """answer status model keeps track of a specific user's submissions"""
 
     attempt = models.ForeignKey(QuizAttemptStatus, on_delete=models.CASCADE)
     question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)

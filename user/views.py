@@ -5,6 +5,8 @@ from user.forms import SignUpForm, SignInForm
 
 
 def logout_view(request):
+    """logout view"""
+
     try:
         logout(request)
     except:
@@ -14,6 +16,8 @@ def logout_view(request):
 
 
 def redirect_view(request):
+    """redirects user depending on user's privileges"""
+
     if(request.user.is_authenticated):
         if(request.user.is_teacher):
             return redirect("/quiz/create-quiz/")
@@ -24,6 +28,8 @@ def redirect_view(request):
 
 
 def sign_up(request):
+    """both student's and teacher's sign up view using builtin model form"""
+
     if request.user.is_authenticated:
         return redirect("/")
     context = {'form': SignUpForm}
@@ -31,6 +37,8 @@ def sign_up(request):
 
 
 def sign_in(request):
+    """both student's and teacher's sign in view using builtin model form"""
+
     if request.user.is_authenticated:
         return redirect("/")
     context = {'form': SignInForm}
@@ -38,6 +46,8 @@ def sign_in(request):
 
 
 def teacher_sign_up(request):
+    """sign up post request validation view"""
+
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -51,6 +61,8 @@ def teacher_sign_up(request):
 
 
 def teacher_sign_in(request):
+    """sign in post request validation view"""
+
     if request.method == 'POST':
         form = SignInForm(data=request.POST)
         user = None
@@ -75,6 +87,8 @@ def teacher_sign_in(request):
 
 
 def student_sign_up(request):
+    """student sign up post request validation view"""
+
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -86,6 +100,8 @@ def student_sign_up(request):
 
 
 def student_sign_in(request):
+    """student sign in post request validation view"""
+
     if request.method == 'POST':
         form = SignInForm(data=request.POST)
         user = None
