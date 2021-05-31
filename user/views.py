@@ -1,5 +1,4 @@
-from quiz import views
-from django.http.response import HttpResponse
+from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from user.forms import SignUpForm, SignInForm
@@ -46,6 +45,8 @@ def teacher_sign_up(request):
             teacher = form.save(commit=False)
             teacher.is_teacher = True
             teacher.save()
+        else:
+            return JsonResponse({"error": "details are invalid"}, safe=False)
     return redirect("/")
 
 
@@ -59,19 +60,18 @@ def teacher_sign_in(request):
                 user = authenticate(request, username=request.POST.get(
                     'username'), password=request.POST.get('password'))
             except:
-                raise Exception("unablr to authenticate")
-            if user is not None:
+                return JsonResponse({"error": "user not found"}, safe=False)
+            if user is not None and user.is_teacher:
                 try:
                     login(request, user)
                     return redirect("/quiz/create-quiz/")
                 except:
-                    raise Exception("unable to login")
+                    return JsonResponse({"error": "unable to login"}, safe=False)
             else:
-                raise Exception("user not found")
+                return JsonResponse({"error": "user not found"}, safe=False)
         else:
-            return Exception("user not found")
-    else:
-        return redirect("/")
+            return JsonResponse({"error": "details are invalid"}, safe=False)
+    return redirect("/")
 
 
 def student_sign_up(request):
@@ -80,6 +80,8 @@ def student_sign_up(request):
         if form.is_valid():
             print(request.POST)
             form.save()
+        else:
+            return JsonResponse({"error": "details are invalid"}, safe=False)
     return redirect("/")
 
 
@@ -94,13 +96,14 @@ def student_sign_in(request):
                     'username'), password=request.POST.get('password'))
             except:
                 raise Exception("unablr to authenticate")
-            if user is not None:
+            if user is not None and not user.is_teacher:
                 try:
                     login(request, user)
                     return redirect("/quiz/"+str(user.pk)+"/")
                 except:
                     raise Exception("unable to login")
             else:
-                raise Exception("user not found")
-    else:
-        return redirect("/")
+                return JsonResponse({"error": "user not found"}, safe=False)
+        else:
+            return JsonResponse({"error": "details are invalid"}, safe=False)
+    return redirect("/")

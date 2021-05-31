@@ -51,13 +51,13 @@ class QuizAttemptStatus(models.Model):
         return self.status
 
     def save(self, *args, **kwargs):
+        super(QuizAttemptStatus, self).save(*args, **kwargs)
         if self.status == "C":
             try:
                 self.quiz.completed += 1
                 self.quiz.save()
             except:
                 raise Exception("unable to increment quiz completed")
-        super(QuizAttemptStatus, self).save(*args, **kwargs)
 
 
 class AnswerStatus(models.Model):

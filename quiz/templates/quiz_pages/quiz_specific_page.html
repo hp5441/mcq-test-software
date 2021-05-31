@@ -63,8 +63,7 @@
 >
   <div class="list-group" id="completed-list-container"></div>
 </div>
-
-<script type="text/javascript">
+<script>
   (function () {
     // selectors
     var startButton = document.getElementById("start-quiz");
@@ -392,8 +391,10 @@
       e.returnValue = "";
     };
 
+    if(status==="I" || status==="N"){
     window.addEventListener("beforeunload", checkBeforeUnload);
-
+    }
+    
     if (status === "C") {
       updateCompletedDom();
       window.removeEventListener("beforeunload", checkBeforeUnload);

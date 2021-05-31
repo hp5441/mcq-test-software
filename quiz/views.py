@@ -5,23 +5,25 @@ from .utils import get_json
 
 
 def quiz_page(request, user):
-    if(user == request.user.pk):
+    if(user == request.user.pk and not request.user.is_teacher):
         quizs = Quiz.objects.filter(school=request.user.school)
         context = {'quizs': quizs}
         return render(request, 'quiz_pages/quiz_page.html', context)
+    return redirect("/")
 
 
 def quiz_specific_page(request, user, quiz):
-    if(user == request.user.pk):
+    if(user == request.user.pk and not request.user.is_teacher):
         if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
             quiz_status, created = QuizAttemptStatus.objects.get_or_create(user=request.user,
                                                                            quiz=Quiz.objects.get(pk=quiz))
             context = {"status": quiz_status}
             return render(request, 'quiz_pages/quiz_specific_page.html', context)
+    return redirect("/")
 
 
 def get_quiz_questions(request):
-    if request.method == "POST":
+    if request.method == "POST" and not request.user.is_teacher:
 
         quiz = request.POST.get("quiz")
 
@@ -33,10 +35,11 @@ def get_quiz_questions(request):
                 quiz=Quiz.objects.get(pk=int(quiz))).order_by('question__pk').values('question', 'answer', 'pk'))
             data = {"answers": answers, "questions": questions}
             return JsonResponse(data, safe=False)
+    return redirect("/")
 
 
 def submit_quiz_response(request):
-    if request.method == "POST":
+    if request.method == "POST" and not request.user.is_teacher:
         print(request.POST)
         quiz = request.POST.get("quiz")
         if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
@@ -79,10 +82,11 @@ def submit_quiz_response(request):
                 attempt_status.time_taken = time
                 attempt_status.save()
             return JsonResponse({"actual-answers": actual_answers, "quiz-status": attempt_status.status}, safe=False)
+    return redirect("/")
 
 
 def get_result(request):
-    if request.method == "POST":
+    if request.method == "POST" and not request.user.is_teacher:
         quiz = request.POST.get("quiz")
         if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
             quiz_object = Quiz.objects.get(pk=int(quiz))
@@ -92,10 +96,13 @@ def get_result(request):
                 "question", "answer").values("question", "correctness"))
             time = attempt.time_taken
             return JsonResponse({"attempt-data": answers, "time-taken": time}, safe=False)
+        else:
+            return JsonResponse({"error": "user not authorised"}, safe=False)
+    return redirect("/")
 
 
 def create_quiz(request):
-    if request.method == "POST":
+    if request.method == "POST" and request.user.is_teacher:
         quiz = None
         data = get_json()
 
@@ -127,12 +134,10 @@ def create_quiz(request):
 
 
 def delete_quiz(request):
-    if(request.method == "POST"):
+    if(request.method == "POST" and request.user.is_teacher):
         quiz = request.POST.get("quiz_pk")
         try:
             Quiz.objects.get(pk=int(quiz)).delete()
         except:
             raise Exception("unable to delete quiz")
-        else:
-            return redirect("/")
     return redirect("/")
