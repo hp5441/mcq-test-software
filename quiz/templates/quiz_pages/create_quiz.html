@@ -22,10 +22,10 @@
   <li>
     {{quiz.name}}, students completed: {{quiz.completed}}, pass percentage:
     {{quiz.pass_percentage}}
-    <form  id="submit-delete" action="/quiz/delete-quiz/" method="POST">
+    <form class="submit-delete" action="/quiz/delete-quiz/" method="POST">
       {% csrf_token %}
       <input type="number" name="quiz_pk" required hidden value="{{quiz.pk}}" />
-      <input type="submit" id="submit-delete-button" value="delete" />
+      <input type="submit" class="submit-delete-button" value="delete" />
     </form>
   </li>
   {% endfor %}
@@ -35,9 +35,8 @@
   (function () {
     // selectors
     var createForm = document.getElementById("submit-create");
-    var deleteForm = document.getElementById("submit-delete");
+    var deleteForms = document.querySelectorAll(".submit-delete");
     var createButton = document.getElementById("submit-create-button");
-    var deleteButton = document.getElementById("submit-delete-button");
 
     // functions
     var disableElement = (element) => {
@@ -48,8 +47,10 @@
     createForm.addEventListener("submit", (e) => {
       disableElement(createButton);
     });
-    deleteForm.addEventListener("submit", (e) => {
-      disableElement(deleteButton);
+    deleteForms.forEach((form) => {
+      form.addEventListener("submit", (e) => {
+        disableElement(e.target.childNodes[5]);
+      });
     });
   })();
 </script>
