@@ -3,7 +3,7 @@
 <h3>quiz</h3>
 <ul>
   {% for quiz in quizs %}
-  <li>{{quiz.name}}</li>
+  <li>{{quiz.name}}   pass percentage:   {{quiz.pass_percentage}}</li>
   <div id="{{quiz.pk}}">
     <a href="/quiz/{{user.pk}}/{{quiz.pk}}/"
       ><input type="button" value="start"

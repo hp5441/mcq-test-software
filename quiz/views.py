@@ -103,7 +103,7 @@ def get_result(request):
             attempt = QuizAttemptStatus.objects.get(
                 user=request.user, quiz=quiz_object)
             answers = list(AnswerStatus.objects.filter(attempt=attempt).distinct(
-                "question", "answer").values("question", "correctness"))
+                "question").values("question", "correctness"))
             time = attempt.time_taken
             return JsonResponse({"attempt-data": answers, "time-taken": time}, safe=False)
         else:
