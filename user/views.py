@@ -1,15 +1,38 @@
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from user.forms import SignUpForm, SignInForm
 
 
+def logout_view(request):
+    try:
+        logout(request)
+    except:
+        raise Exception("unable to logout")
+    else:
+        return redirect("/")
+
+
+def redirect_view(request):
+    if(request.user.is_authenticated):
+        if(request.user.is_teacher):
+            return redirect("/quiz/quiz-create/")
+        else:
+            return redirect(f"/quiz/{request.user.pk}/")
+    else:
+        return redirect("/signin/")
+
+
 def sign_up(request):
+    if request.user.is_authenticated:
+        return redirect("/")
     context = {'form': SignUpForm}
     return render(request, 'signin/sign_up.html', context)
 
 
 def sign_in(request):
+    if request.user.is_authenticated:
+        return redirect("/")
     context = {'form': SignInForm}
     return render(request, 'signin/sign_in.html', context)
 

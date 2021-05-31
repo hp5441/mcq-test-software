@@ -15,7 +15,6 @@
     <script src="{% static 'main.js' %}" defer></script>
   </head>
   <body>
-    
     <script
       src="https://code.jquery.com/jquery-3.6.0.min.js"
       integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
@@ -26,6 +25,16 @@
       integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
       crossorigin="anonymous"
     ></script>
+    <nav class="navbar navbar-light bg-light">
+      <a class="navbar-brand" href="/">  Quiz App</a>
+      <span id="user-profile"></span>
+    </nav>
+    <script>
+      var userProfile = document.getElementById("user-profile");
+      if (userProfile && "{{request.user.name}}") {
+        userProfile.innerHTML = "hi {{request.user.name}} <form action='/logout/' method='GET'><input type='submit' value='Log Out'/></form>"
+      }
+    </script>
     {% block content %} {% endblock content %}
   </body>
 </html>
