@@ -1,3 +1,4 @@
+from quiz import views
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
@@ -45,7 +46,7 @@ def teacher_sign_up(request):
             teacher = form.save(commit=False)
             teacher.is_teacher = True
             teacher.save()
-            return HttpResponse("thanks")
+    return redirect("/")
 
 
 def teacher_sign_in(request):
@@ -65,7 +66,8 @@ def teacher_sign_in(request):
                 raise Exception("user not found")
         else:
             return Exception("user not found")
-
+    else:
+        return redirect("/")
 
 def student_sign_up(request):
     if request.method == 'POST':
@@ -73,8 +75,7 @@ def student_sign_up(request):
         if form.is_valid():
             print(request.POST)
             form.save()
-            return HttpResponse("thanks")
-
+    return redirect("/")
 
 def student_sign_in(request):
     if request.method == 'POST':
@@ -91,3 +92,5 @@ def student_sign_in(request):
                     raise Exception("unable to login")
             else:
                 raise Exception("user not found")
+    else:
+        return redirect("/")
