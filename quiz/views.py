@@ -19,7 +19,7 @@ def quiz_specific_page(request, user, quiz):
 
     if(user == request.user.pk and not request.user.is_teacher):
         quiz_object = Quiz.objects.filter(pk=int(quiz))
-        if len(quiz_object) and request.user.school.pk == quiz_object.school.pk:
+        if len(quiz_object) and request.user.school.pk == quiz_object[0].school.pk:
             quiz_status, created = QuizAttemptStatus.objects.get_or_create(user=request.user,
                                                                            quiz=Quiz.objects.get(pk=quiz))
             context = {"status": quiz_status}
