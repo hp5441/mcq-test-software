@@ -18,7 +18,8 @@ def quiz_specific_page(request, user, quiz):
     """quiz specific page view shows the quiz with mcq options"""
 
     if(user == request.user.pk and not request.user.is_teacher):
-        if request.user.school.pk == Quiz.objects.get(pk=int(quiz)).school.pk:
+        quiz_object = Quiz.objects.filter(pk=int(quiz))
+        if len(quiz_object) and request.user.school.pk == quiz_object.school.pk:
             quiz_status, created = QuizAttemptStatus.objects.get_or_create(user=request.user,
                                                                            quiz=Quiz.objects.get(pk=quiz))
             context = {"status": quiz_status}
