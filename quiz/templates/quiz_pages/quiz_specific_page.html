@@ -1,6 +1,5 @@
 {% extends "base.html" %} {% load static %} {% load quiz_extras %} 
-{% block content %} 
-{% if status.status == "N" %}
+{% block content %} {% if status.status == "N" %}
 <div
   class="container-sm bg-info"
   style="height: 200px"
@@ -21,7 +20,9 @@
   <input type="button" id="start-quiz" value="Continue" />
 </div>
 {% endif %}
-
+<div class="d-flex justify-content-center visually-hidden" id="spinner">
+  <div class="spinner-border" role="status"></div>
+</div>
 <div
   class="container-sm bg-info visually-hidden"
   style="height: 700px"
@@ -75,6 +76,7 @@
     var submitAnswerButton = document.getElementById("submit-answer");
     var answerStatusElement = document.getElementById("answer-status");
     var nextQuestionButton = document.getElementById("next-question");
+    var spinnerElement = document.getElementById("spinner");
     var answerStatus = null;
     var answerInputs = null;
 
@@ -221,6 +223,7 @@
           intervalVar = setInterval(timer, 1000);
         })
         .then(() => {
+          hideElement(spinnerElement);
           showElement(quizContainer);
         })
         .fail((err) => {
@@ -292,6 +295,8 @@
         })
         .then((msg) => {
           createCompletedNode(msg);
+          hideElement(spinnerElement);
+          showElement(completedContainer);
         })
         .fail((err) => {
           console.log(err);
@@ -300,8 +305,8 @@
 
     var updateCompletedDom = () => {
       hideElement(quizContainer);
+      showElement(spinnerElement);
       getResult();
-      showElement(completedContainer);
     };
 
     // AJAX request for submitting the user's response and functions for subsequent manipulation of the DOM
@@ -356,10 +361,11 @@
       checkedAnswers.clear();
     };
 
-    // adding event listeners for buttons 
+    // adding event listeners for buttons
     if (noticeContainer) {
       startButton.addEventListener("click", () => {
         hideElement(noticeContainer);
+        showElement(spinnerElement);
         getQuestions();
       });
     }
@@ -367,7 +373,7 @@
     if (quizContainer) {
       submitAnswerButton.addEventListener("click", () => {
         submitAnswer();
-        disableElement(submitAnswerButton)
+        disableElement(submitAnswerButton);
         $("#submit-answer").html(
           '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> <span class="sr-only">Loading...</span>'
         );
@@ -406,10 +412,10 @@
       e.returnValue = "";
     };
 
-    if(status==="I" || status==="N"){
-    window.addEventListener("beforeunload", checkBeforeUnload);
+    if (status === "I" || status === "N") {
+      window.addEventListener("beforeunload", checkBeforeUnload);
     }
-    
+
     if (status === "C") {
       updateCompletedDom();
       window.removeEventListener("beforeunload", checkBeforeUnload);
