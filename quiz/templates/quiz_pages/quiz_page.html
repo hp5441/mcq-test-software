@@ -1,14 +1,16 @@
-{% extends "base.html" %} {% load static %} {% load quiz_extras %} 
-{% block content %} 
+{% extends "base.html" %} {% load quiz_extras %} 
+{% block content %}
 <h3>quiz</h3>
-<ul>
+<ul class="list-group" style="width: fit-content;">
   {% for quiz in quizs %}
-  <li>{{quiz.name}}   pass percentage:   {{quiz.pass_percentage}}</li>
+  <li class="list-group-item">{{quiz.name}}   pass percentage:   {{quiz.pass_percentage}}
   <div id="{{quiz.pk}}">
     <a href="/quiz/{{user.pk}}/{{quiz.pk}}/"
       ><input type="button" value="start"
     /></a>
-  </div>
+  </div></li>
+  {% empty %}
+  <li class="list-group-item">No quizzes available</li>
   {% endfor %}
 </ul>
 {% endblock %}

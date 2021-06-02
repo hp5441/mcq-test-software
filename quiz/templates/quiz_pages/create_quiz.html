@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static %} {% load quiz_extras %} 
+{% extends "base.html" %} {% load quiz_extras %} 
 {% block content %}
 <h3>create quiz</h3>
 <form id="submit-create" action="/quiz/create-quiz/" method="POST">
@@ -17,9 +17,9 @@
   <input type="submit" id="submit-create-button" value="create" />
 </form>
 
-<ul>
+<ul class="list-group" style="width: fit-content; margin-top: 10px;">
   {% for quiz in quizes %}
-  <li>
+  <li class="list-group-item">
     {{quiz.name}}, students completed: {{quiz.completed}}, pass percentage:
     {{quiz.pass_percentage}}
     <form class="submit-delete" action="/quiz/delete-quiz/" method="POST">
@@ -27,6 +27,10 @@
       <input type="number" name="quiz_pk" required hidden value="{{quiz.pk}}" />
       <input type="submit" class="submit-delete-button" value="delete" />
     </form>
+  </li>
+  {% empty %}
+  <li class="list-group-item">
+    No active quizzes
   </li>
   {% endfor %}
 </ul>
